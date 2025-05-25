@@ -52,7 +52,7 @@ end)
 
 RegisterNetEvent('Core:Server:UpdateObject', function()
     if source ~= '' then return end
-    Core = exports['qb-core']:GetCoreObject()
+    Core = exports['bv-core']:GetCoreObject()
 end)
 
 AddEventHandler('Core:Server:PlayerLoaded', function(Player)

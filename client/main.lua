@@ -1,4 +1,4 @@
-Core = exports['qb-core']:GetCoreObject()
+Core = exports['bv-core']:GetCoreObject()
 PlayerData = nil
 local hotbarShown = false
 
@@ -16,7 +16,7 @@ RegisterNetEvent('Core:Client:OnPlayerUnload', function()
 end)
 
 RegisterNetEvent('Core:Client:UpdateObject', function()
-    Core = exports['qb-core']:GetCoreObject()
+    Core = exports['bv-core']:GetCoreObject()
 end)
 
 RegisterNetEvent('Core:Player:SetPlayerData', function(val)

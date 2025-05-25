@@ -84,7 +84,7 @@ RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
                 bagObject = bag
                 HoldingDrop = true
                 heldDrop = newDropId
-                exports['qb-core']:DrawText('Press [G] to drop the bag')
+                exports['bv-core']:DrawText('Press [G] to drop the bag')
             end
         end,
         interactDist = 2.5,
@@ -121,7 +121,7 @@ CreateThread(function()
                 local x, y, z = table.unpack(coords + forward * 0.57)
                 SetEntityCoords(bagObject, x, y, z - 0.9, false, false, false, false)
                 FreezeEntityPosition(bagObject, true)
-                exports['qb-core']:HideText()
+                exports['bv-core']:HideText()
                 TriggerServerEvent('qb-inventory:server:updateDrop', heldDrop, coords)
                 HoldingDrop = false
                 bagObject = nil
