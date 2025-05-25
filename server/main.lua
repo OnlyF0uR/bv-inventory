@@ -1,4 +1,4 @@
-QBCore = exports['qb-core']:GetCoreObject()
+Core = exports['bv-core']:GetCoreObject()
 Inventories = {}
 Drops = {}
 RegisteredShops = {}
@@ -50,70 +50,70 @@ AddEventHandler('txAdmin:events:serverShuttingDown', function()
     end
 end)
 
-RegisterNetEvent('QBCore:Server:UpdateObject', function()
+RegisterNetEvent('Core:Server:UpdateObject', function()
     if source ~= '' then return end
-    QBCore = exports['qb-core']:GetCoreObject()
+    Core = exports['qb-core']:GetCoreObject()
 end)
 
-AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'AddItem', function(item, amount, slot, info, reason)
+AddEventHandler('Core:Server:PlayerLoaded', function(Player)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'AddItem', function(item, amount, slot, info, reason)
         return AddItem(Player.PlayerData.source, item, amount, slot, info, reason)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'RemoveItem', function(item, amount, slot, reason)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'RemoveItem', function(item, amount, slot, reason)
         return RemoveItem(Player.PlayerData.source, item, amount, slot, reason)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemBySlot', function(slot)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemBySlot', function(slot)
         return GetItemBySlot(Player.PlayerData.source, slot)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemByName', function(item)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemByName', function(item)
         return GetItemByName(Player.PlayerData.source, item)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemsByName', function(item)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'GetItemsByName', function(item)
         return GetItemsByName(Player.PlayerData.source, item)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'ClearInventory', function(filterItems)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'ClearInventory', function(filterItems)
         ClearInventory(Player.PlayerData.source, filterItems)
     end)
 
-    QBCore.Functions.AddPlayerMethod(Player.PlayerData.source, 'SetInventory', function(items)
+    Core.Functions.AddPlayerMethod(Player.PlayerData.source, 'SetInventory', function(items)
         SetInventory(Player.PlayerData.source, items)
     end)
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
-    local Players = QBCore.Functions.GetQBPlayers()
+    local Players = Core.Functions.GetQBPlayers()
     for k in pairs(Players) do
-        QBCore.Functions.AddPlayerMethod(k, 'AddItem', function(item, amount, slot, info)
+        Core.Functions.AddPlayerMethod(k, 'AddItem', function(item, amount, slot, info)
             return AddItem(k, item, amount, slot, info)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'RemoveItem', function(item, amount, slot)
+        Core.Functions.AddPlayerMethod(k, 'RemoveItem', function(item, amount, slot)
             return RemoveItem(k, item, amount, slot)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'GetItemBySlot', function(slot)
+        Core.Functions.AddPlayerMethod(k, 'GetItemBySlot', function(slot)
             return GetItemBySlot(k, slot)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'GetItemByName', function(item)
+        Core.Functions.AddPlayerMethod(k, 'GetItemByName', function(item)
             return GetItemByName(k, item)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'GetItemsByName', function(item)
+        Core.Functions.AddPlayerMethod(k, 'GetItemsByName', function(item)
             return GetItemsByName(k, item)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'ClearInventory', function(filterItems)
+        Core.Functions.AddPlayerMethod(k, 'ClearInventory', function(filterItems)
             ClearInventory(k, filterItems)
         end)
 
-        QBCore.Functions.AddPlayerMethod(k, 'SetInventory', function(items)
+        Core.Functions.AddPlayerMethod(k, 'SetInventory', function(items)
             SetInventory(k, items)
         end)
 
@@ -127,10 +127,10 @@ local function checkWeapon(source, item)
     local currentWeapon = type(item) == 'table' and item.name or item
     local ped = GetPlayerPed(source)
     local weapon = GetSelectedPedWeapon(ped)
-    local weaponInfo = QBCore.Shared.Weapons[weapon]
+    local weaponInfo = Core.Shared.Weapons[weapon]
     if weaponInfo and weaponInfo.name == currentWeapon then
         RemoveWeaponFromPed(ped, weapon)
-        TriggerClientEvent('qb-weapons:client:UseWeapon', source, { name = currentWeapon }, false)
+        TriggerClientEvent('core-weapons:client:UseWeapon', source, { name = currentWeapon }, false)
     end
 end
 
@@ -138,7 +138,7 @@ end
 
 RegisterNetEvent('qb-inventory:server:openVending', function(data)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = Core.Functions.GetPlayer(src)
     if not Player then return end
     CreateShop({
         name = 'vending',
@@ -152,7 +152,7 @@ end)
 
 RegisterNetEvent('qb-inventory:server:closeInventory', function(inventory)
     local src = source
-    local QBPlayer = QBCore.Functions.GetPlayer(src)
+    local QBPlayer = Core.Functions.GetPlayer(src)
     if not QBPlayer then return end
     Player(source).state.inv_busy = false
     if inventory:find('shop%-') then return end
@@ -181,16 +181,16 @@ RegisterNetEvent('qb-inventory:server:useItem', function(item)
     local src = source
     local itemData = GetItemBySlot(src, item.slot)
     if not itemData then return end
-    local itemInfo = QBCore.Shared.Items[itemData.name]
+    local itemInfo = Core.Shared.Items[itemData.name]
     if itemData.type == 'weapon' then
-        TriggerClientEvent('qb-weapons:client:UseWeapon', src, itemData, itemData.info.quality and itemData.info.quality > 0)
+        TriggerClientEvent('core-weapons:client:UseWeapon', src, itemData, itemData.info.quality and itemData.info.quality > 0)
         TriggerClientEvent('qb-inventory:client:ItemBox', src, itemInfo, 'use')
     elseif itemData.name == 'id_card' then
         UseItem(itemData.name, src, itemData)
         TriggerClientEvent('qb-inventory:client:ItemBox', source, itemInfo, 'use')
         local playerPed = GetPlayerPed(src)
         local playerCoords = GetEntityCoords(playerPed)
-        local players = QBCore.Functions.GetPlayers()
+        local players = Core.Functions.GetPlayers()
         local gender = item.info.gender == 0 and 'Male' or 'Female'
         for _, v in pairs(players) do
             local targetPed = GetPlayerPed(v)
@@ -215,7 +215,7 @@ RegisterNetEvent('qb-inventory:server:useItem', function(item)
         TriggerClientEvent('qb-inventory:client:ItemBox', src, itemInfo, 'use')
         local playerPed = GetPlayerPed(src)
         local playerCoords = GetEntityCoords(playerPed)
-        local players = QBCore.Functions.GetPlayers()
+        local players = Core.Functions.GetPlayers()
         for _, v in pairs(players) do
             local targetPed = GetPlayerPed(v)
             local dist = #(playerCoords - GetEntityCoords(targetPed))
@@ -241,7 +241,7 @@ end)
 
 RegisterNetEvent('qb-inventory:server:openDrop', function(dropId)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = Core.Functions.GetPlayer(src)
     if not Player then return end
     local playerPed = GetPlayerPed(src)
     local playerCoords = GetEntityCoords(playerPed)
@@ -275,13 +275,13 @@ end)
 
 -- Callbacks
 
-QBCore.Functions.CreateCallback('qb-inventory:server:GetCurrentDrops', function(_, cb)
+Core.Functions.CreateCallback('qb-inventory:server:GetCurrentDrops', function(_, cb)
     cb(Drops)
 end)
 
-QBCore.Functions.CreateCallback('qb-inventory:server:createDrop', function(source, cb, item)
+Core.Functions.CreateCallback('qb-inventory:server:createDrop', function(source, cb, item)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = Core.Functions.GetPlayer(src)
     if not Player then
         cb(false)
         return
@@ -323,11 +323,11 @@ QBCore.Functions.CreateCallback('qb-inventory:server:createDrop', function(sourc
     end
 end)
 
-QBCore.Functions.CreateCallback('qb-inventory:server:attemptPurchase', function(source, cb, data)
+Core.Functions.CreateCallback('qb-inventory:server:attemptPurchase', function(source, cb, data)
     local itemInfo = data.item
     local amount = data.amount
     local shop = string.gsub(data.shop, 'shop%-', '')
-    local Player = QBCore.Functions.GetPlayer(source)
+    local Player = Core.Functions.GetPlayer(source)
 
     if not Player then
         cb(false)
@@ -356,13 +356,13 @@ QBCore.Functions.CreateCallback('qb-inventory:server:attemptPurchase', function(
     end
 
     if amount > shopInfo.items[itemInfo.slot].amount then
-        TriggerClientEvent('QBCore:Notify', source, 'Cannot purchase larger quantity than currently in stock', 'error')
+        TriggerClientEvent('Core:Notify', source, 'Cannot purchase larger quantity than currently in stock', 'error')
         cb(false)
         return
     end
 
     if not CanAddItem(source, itemInfo.name, amount) then
-        TriggerClientEvent('QBCore:Notify', source, 'Cannot hold item', 'error')
+        TriggerClientEvent('Core:Notify', source, 'Cannot hold item', 'error')
         cb(false)
         return
     end
@@ -374,20 +374,20 @@ QBCore.Functions.CreateCallback('qb-inventory:server:attemptPurchase', function(
         TriggerEvent('qb-shops:server:UpdateShopItems', shop, itemInfo, amount)
         cb(true)
     else
-        TriggerClientEvent('QBCore:Notify', source, 'You do not have enough money', 'error')
+        TriggerClientEvent('Core:Notify', source, 'You do not have enough money', 'error')
         cb(false)
     end
 end)
 
-QBCore.Functions.CreateCallback('qb-inventory:server:giveItem', function(source, cb, target, item, amount, slot, info)
-    local player = QBCore.Functions.GetPlayer(source)
+Core.Functions.CreateCallback('qb-inventory:server:giveItem', function(source, cb, target, item, amount, slot, info)
+    local player = Core.Functions.GetPlayer(source)
     if not player or player.PlayerData.metadata['isdead'] or player.PlayerData.metadata['inlaststand'] or player.PlayerData.metadata['ishandcuffed'] then
         cb(false)
         return
     end
     local playerPed = GetPlayerPed(source)
 
-    local Target = QBCore.Functions.GetPlayer(target)
+    local Target = Core.Functions.GetPlayer(target)
     if not Target or Target.PlayerData.metadata['isdead'] or Target.PlayerData.metadata['inlaststand'] or Target.PlayerData.metadata['ishandcuffed'] then
         cb(false)
         return
@@ -401,7 +401,7 @@ QBCore.Functions.CreateCallback('qb-inventory:server:giveItem', function(source,
         return
     end
 
-    local itemInfo = QBCore.Shared.Items[item:lower()]
+    local itemInfo = Core.Shared.Items[item:lower()]
     if not itemInfo then
         cb(false)
         return
@@ -451,13 +451,13 @@ end)
 local function getItem(inventoryId, src, slot)
     local items = {}
     if inventoryId == 'player' then
-        local Player = QBCore.Functions.GetPlayer(src)
+        local Player = Core.Functions.GetPlayer(src)
         if Player and Player.PlayerData.items then
             items = Player.PlayerData.items
         end
     elseif inventoryId:find('otherplayer-') then
         local targetId = tonumber(inventoryId:match('otherplayer%-(.+)'))
-        local targetPlayer = QBCore.Functions.GetPlayer(targetId)
+        local targetPlayer = Core.Functions.GetPlayer(targetId)
         if targetPlayer and targetPlayer.PlayerData.items then
             items = targetPlayer.PlayerData.items
         end
@@ -493,7 +493,7 @@ RegisterNetEvent('qb-inventory:server:SetInventoryData', function(fromInventory,
     if toInventory:find('shop%-') then return end
     if not fromInventory or not toInventory or not fromSlot or not toSlot or not fromAmount or not toAmount then return end
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = Core.Functions.GetPlayer(src)
     if not Player then return end
 
     fromSlot, toSlot, fromAmount, toAmount = tonumber(fromSlot), tonumber(toSlot), tonumber(fromAmount), tonumber(toAmount)

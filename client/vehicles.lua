@@ -15,7 +15,7 @@ local function OpenTrunk(vehicle)
 end
 
 function CloseTrunk()
-    local vehicle, distance = QBCore.Functions.GetClosestVehicle()
+    local vehicle, distance = Core.Functions.GetClosestVehicle()
     if vehicle == 0 or distance > 5 then return end
     LoadAnimDict('amb@prop_human_bum_bin@idle_b')
     TaskPlayAnim(PlayerPedId(), 'amb@prop_human_bum_bin@idle_b', 'exit', 4.0, 4.0, -1, 50, 0, false, false, false)
@@ -28,7 +28,7 @@ end
 
 -- Callbacks
 
-QBCore.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', function(cb)
+Core.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', function(cb)
     local ped = PlayerPedId()
 
     -- Glovebox
@@ -42,7 +42,7 @@ QBCore.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', functi
     end
 
     -- Trunk
-    local vehicle, distance = QBCore.Functions.GetClosestVehicle()
+    local vehicle, distance = Core.Functions.GetClosestVehicle()
     if vehicle ~= 0 and distance < 5 then
         local pos = GetEntityCoords(ped)
         local dimensionMin, dimensionMax = GetModelDimensions(GetEntityModel(vehicle))
@@ -56,7 +56,7 @@ QBCore.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', functi
                 local inventory = 'trunk-' .. plate
                 cb(inventory, class)
             else
-                QBCore.Functions.Notify(Lang:t('notify.vlocked'), 'error')
+                Core.Functions.Notify(Lang:t('notify.vlocked'), 'error')
                 return
             end
         end

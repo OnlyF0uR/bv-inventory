@@ -6,23 +6,25 @@ CurrentDrop = nil
 -- Functions
 
 function GetDrops()
-    QBCore.Functions.TriggerCallback('qb-inventory:server:GetCurrentDrops', function(drops)
+    Core.Functions.TriggerCallback('qb-inventory:server:GetCurrentDrops', function(drops)
         if not drops then return end
         for k, v in pairs(drops) do
             local bag = NetworkGetEntityFromNetworkId(v.entityId)
             if DoesEntityExist(bag) then
-                exports['qb-target']:AddTargetEntity(bag, {
-                    options = {
-                        {
-                            icon = 'fas fa-backpack',
-                            label = Lang:t('menu.o_bag'),
-                            action = function()
-                                TriggerServerEvent('qb-inventory:server:openDrop', k)
-                                CurrentDrop = k
-                            end,
-                        },
-                    },
-                    distance = 2.5,
+                exports['bv-target']:AddTargetEntity({
+                    name = 'drop-target',
+                    netId = v.entityId,
+                    options = {{
+                        icon = 'fas fa-backpack',
+                        label = Lang:t('menu.o_bag'),
+                    }},
+                    onInteract = function(targetName, optionName, vars, entityHit)
+                        if optionName == Lang:t('menu.o_bag') then
+                            TriggerServerEvent('qb-inventory:server:openDrop', k)
+                            CurrentDrop = k
+                        end
+                    end,
+                    interactDist = 2.5,
                 })
             end
         end
@@ -35,7 +37,8 @@ RegisterNetEvent('qb-inventory:client:removeDropTarget', function(dropId)
     while not NetworkDoesNetworkIdExist(dropId) do Wait(10) end
     local bag = NetworkGetEntityFromNetworkId(dropId)
     while not DoesEntityExist(bag) do Wait(10) end
-    exports['qb-target']:RemoveTargetEntity(bag)
+
+    exports['bv-target']:RemoveTargetPoint('drop-target')
 end)
 
 RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
@@ -43,53 +46,55 @@ RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
     local bag = NetworkGetEntityFromNetworkId(dropId)
     while not DoesEntityExist(bag) do Wait(10) end
     local newDropId = 'drop-' .. dropId
-    exports['qb-target']:AddTargetEntity(bag, {
-        options = {
-            {
-                icon = 'fas fa-backpack',
-                label = Lang:t('menu.o_bag'),
-                action = function()
-                    TriggerServerEvent('qb-inventory:server:openDrop', newDropId)
-                    CurrentDrop = newDropId
-                end,
-            },
-            {
-                icon = 'fas fa-hand-pointer',
-                label = 'Pick up bag',
-                action = function()
-                    if IsPedArmed(PlayerPedId(), 4) then
-                        return QBCore.Functions.Notify("You can not be holding a Gun and a Bag!", "error", 5500)
-                    end
-                    if HoldingDrop then
-                        return QBCore.Functions.Notify("Your already holding a bag, Go Drop it!", "error", 5500)
-                    end
-                    AttachEntityToEntity(
-                        bag,
-                        PlayerPedId(),
-                        GetPedBoneIndex(PlayerPedId(), Config.ItemDropObjectBone),
-                        Config.ItemDropObjectOffset[1].x,
-                        Config.ItemDropObjectOffset[1].y,
-                        Config.ItemDropObjectOffset[1].z,
-                        Config.ItemDropObjectOffset[2].x,
-                        Config.ItemDropObjectOffset[2].y,
-                        Config.ItemDropObjectOffset[2].z,
-                        true, true, false, true, 1, true
-                    )
-                    bagObject = bag
-                    HoldingDrop = true
-                    heldDrop = newDropId
-                    exports['qb-core']:DrawText('Press [G] to drop the bag')
-                end,
-            }
-        },
-        distance = 2.5,
+
+    exports['bv-target']:AddTargetEntity({
+        name = 'drop-target',
+        -- netId = NetworkGetNetworkIdFromEntity(bag),
+        netId = dropId,
+        options = {{
+            icon = 'fas fa-backpack',
+            label = Lang:t('menu.o_bag'),
+        }, {
+            icon = 'fas fa-hand-pointer',
+            label = 'Pick up bag',
+        }},
+        onInteract = function(targetName, optionName, vars, entityHit)
+            if optionName == Lang:t('menu.o_bag') then
+                TriggerServerEvent('qb-inventory:server:openDrop', newDropId)
+                CurrentDrop = newDropId
+            elseif optionName == 'Pick up bag' then
+                if IsPedArmed(PlayerPedId(), 4) then
+                    return Core.Functions.Notify("You can not be holding a Gun and a Bag!", "error", 5500)
+                end
+                if HoldingDrop then
+                    return Core.Functions.Notify("Your already holding a bag, Go Drop it!", "error", 5500)
+                end
+                AttachEntityToEntity(
+                    bag,
+                    PlayerPedId(),
+                    GetPedBoneIndex(PlayerPedId(), Config.ItemDropObjectBone),
+                    Config.ItemDropObjectOffset[1].x,
+                    Config.ItemDropObjectOffset[1].y,
+                    Config.ItemDropObjectOffset[1].z,
+                    Config.ItemDropObjectOffset[2].x,
+                    Config.ItemDropObjectOffset[2].y,
+                    Config.ItemDropObjectOffset[2].z,
+                    true, true, false, true, 1, true
+                )
+                bagObject = bag
+                HoldingDrop = true
+                heldDrop = newDropId
+                exports['qb-core']:DrawText('Press [G] to drop the bag')
+            end
+        end,
+        interactDist = 2.5,
     })
 end)
 
 -- NUI Callbacks
 
 RegisterNUICallback('DropItem', function(item, cb)
-    QBCore.Functions.TriggerCallback('qb-inventory:server:createDrop', function(dropId)
+    Core.Functions.TriggerCallback('qb-inventory:server:createDrop', function(dropId)
         if dropId then
             while not NetworkDoesNetworkIdExist(dropId) do Wait(10) end
             local bag = NetworkGetEntityFromNetworkId(dropId)

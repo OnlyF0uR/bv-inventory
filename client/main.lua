@@ -1,31 +1,31 @@
-QBCore = exports['qb-core']:GetCoreObject()
+Core = exports['qb-core']:GetCoreObject()
 PlayerData = nil
 local hotbarShown = false
 
 -- Handlers
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+RegisterNetEvent('Core:Client:OnPlayerLoaded', function()
     LocalPlayer.state:set('inv_busy', false, true)
-    PlayerData = QBCore.Functions.GetPlayerData()
+    PlayerData = Core.Functions.GetPlayerData()
     GetDrops()
 end)
 
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+RegisterNetEvent('Core:Client:OnPlayerUnload', function()
     LocalPlayer.state:set('inv_busy', true, true)
     PlayerData = nil
 end)
 
-RegisterNetEvent('QBCore:Client:UpdateObject', function()
-    QBCore = exports['qb-core']:GetCoreObject()
+RegisterNetEvent('Core:Client:UpdateObject', function()
+    Core = exports['qb-core']:GetCoreObject()
 end)
 
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
+RegisterNetEvent('Core:Player:SetPlayerData', function(val)
     PlayerData = val
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
-        PlayerData = QBCore.Functions.GetPlayerData()
+        PlayerData = Core.Functions.GetPlayerData()
     end
 end)
 
@@ -46,14 +46,14 @@ local function FormatWeaponAttachments(itemdata)
     end
     local attachments = {}
     local weaponName = itemdata.name
-    local WeaponAttachments = exports['qb-weapons']:getConfigWeaponAttachments()
+    local WeaponAttachments = Core.Shared.Wepaons.WeaponAttachments
     if not WeaponAttachments then return {} end
     for attachmentType, weapons in pairs(WeaponAttachments) do
         local componentHash = weapons[weaponName]
         if componentHash then
             for _, attachmentData in pairs(itemdata.info.attachments) do
                 if attachmentData.component == componentHash then
-                    local label = QBCore.Shared.Items[attachmentType] and QBCore.Shared.Items[attachmentType].label or 'Unknown'
+                    local label = Core.Shared.Items[attachmentType] and Core.Shared.Items[attachmentType].label or 'Unknown'
                     attachments[#attachments + 1] = {
                         attachment = attachmentType,
                         label = label
@@ -111,7 +111,7 @@ RegisterNetEvent('qb-inventory:client:requiredItems', function(items, bool)
         for k in pairs(items) do
             itemTable[#itemTable + 1] = {
                 item = items[k].name,
-                label = QBCore.Shared.Items[items[k].name]['label'],
+                label = Core.Shared.Items[items[k].name]['label'],
                 image = items[k].image,
             }
         end
@@ -192,7 +192,7 @@ RegisterNUICallback('PlayDropFail', function(_, cb)
 end)
 
 RegisterNUICallback('AttemptPurchase', function(data, cb)
-    QBCore.Functions.TriggerCallback('qb-inventory:server:attemptPurchase', function(canPurchase)
+    Core.Functions.TriggerCallback('qb-inventory:server:attemptPurchase', function(canPurchase)
         cb(canPurchase)
     end, data)
 end)
@@ -222,21 +222,21 @@ RegisterNUICallback('SetInventoryData', function(data, cb)
 end)
 
 RegisterNUICallback('GiveItem', function(data, cb)
-    local player, distance = QBCore.Functions.GetClosestPlayer(GetEntityCoords(PlayerPedId()))
+    local player, distance = Core.Functions.GetClosestPlayer(GetEntityCoords(PlayerPedId()))
     if player ~= -1 and distance < 3 then
         local playerId = GetPlayerServerId(player)
-        QBCore.Functions.TriggerCallback('qb-inventory:server:giveItem', function(success)
+        Core.Functions.TriggerCallback('qb-inventory:server:giveItem', function(success)
             cb(success)
         end, playerId, data.item.name, data.amount, data.slot, data.info)
     else
-        QBCore.Functions.Notify(Lang:t('notify.nonb'), 'error')
+        Core.Functions.Notify(Lang:t('notify.nonb'), 'error')
         cb(false)
     end
 end)
 
 RegisterNUICallback('GetWeaponData', function(cData, cb)
     local data = {
-        WeaponData = QBCore.Shared.Items[cData.weapon],
+        WeaponData = Core.Shared.Items[cData.weapon],
         AttachmentData = FormatWeaponAttachments(cData.ItemData)
     }
     cb(data)
@@ -245,10 +245,10 @@ end)
 RegisterNUICallback('RemoveAttachment', function(data, cb)
     local ped = PlayerPedId()
     local WeaponData = data.WeaponData
-    local allAttachments = exports['qb-weapons']:getConfigWeaponAttachments()
+    local allAttachments = Core.Shared.Wepaons.WeaponAttachments
     local Attachment = allAttachments[data.AttachmentData.attachment][WeaponData.name]
-    local itemInfo = QBCore.Shared.Items[data.AttachmentData.attachment]
-    QBCore.Functions.TriggerCallback('qb-weapons:server:RemoveAttachment', function(NewAttachments)
+    local itemInfo = Core.Shared.Items[data.AttachmentData.attachment]
+    Core.Functions.TriggerCallback('core-weapons:server:RemoveAttachment', function(NewAttachments)
         if NewAttachments ~= false then
             local Attachies = {}
             RemoveWeaponComponentFromPed(ped, joaat(WeaponData.name), joaat(Attachment))
@@ -280,16 +280,18 @@ end)
 -- Vending
 
 CreateThread(function()
-    exports['qb-target']:AddTargetModel(Config.VendingObjects, {
-        options = {
-            {
-                type = 'server',
-                event = 'qb-inventory:server:openVending',
-                icon = 'fa-solid fa-cash-register',
-                label = Lang:t('menu.vending'),
-            },
-        },
-        distance = 2.5
+    exports['bv-target']:AddTargetModels({
+        name = "open-vending",
+        model = Config.VendingObjects,
+        options = {{
+            icon = 'fa-solid fa-cash-register',
+            label = Lang:t('menu.vending'),
+            action = function(entity)
+                local netId = NetworkGetNetworkIdFromEntity(entity)
+                TriggerServerEvent('qb-inventory:server:openVending', netId)
+            end,
+        }},
+        interactDist = 2.5,
     })
 end)
 
@@ -310,7 +312,7 @@ for i = 1, 5 do
         if not itemData then return end
         if itemData.type == "weapon" then
             if HoldingDrop then
-                return QBCore.Functions.Notify("Your already holding a bag, Go Drop it!", "error", 5500)
+                return Core.Functions.Notify("Your already holding a bag, Go Drop it!", "error", 5500)
             end
         end
         TriggerServerEvent('qb-inventory:server:useItem', itemData)

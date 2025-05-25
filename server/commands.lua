@@ -1,10 +1,10 @@
 -- Commands
 
-QBCore.Commands.Add('giveitem', 'Give An Item (Admin Only)', { { name = 'id', help = 'Player ID' }, { name = 'item', help = 'Name of the item (not a label)' }, { name = 'amount', help = 'Amount of items' } }, false, function(source, args)
+Core.Commands.Add('giveitem', 'Give An Item (Admin Only)', { { name = 'id', help = 'Player ID' }, { name = 'item', help = 'Name of the item (not a label)' }, { name = 'amount', help = 'Amount of items' } }, false, function(source, args)
     local id = tonumber(args[1])
-    local player = QBCore.Functions.GetPlayer(id)
+    local player = Core.Functions.GetPlayer(id)
     local amount = tonumber(args[3]) or 1
-    local itemData = QBCore.Shared.Items[tostring(args[2]):lower()]
+    local itemData = Core.Shared.Items[tostring(args[2]):lower()]
     if player then
         if itemData then
             -- check iteminfo
@@ -23,7 +23,7 @@ QBCore.Commands.Add('giveitem', 'Give An Item (Admin Only)', { { name = 'id', he
                 info.type = 'Class C Driver License'
             elseif itemData['type'] == 'weapon' then
                 amount = 1
-                info.serie = tostring(QBCore.Shared.RandomInt(2) .. QBCore.Shared.RandomStr(3) .. QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(4))
+                info.serie = tostring(Core.Shared.RandomInt(2) .. Core.Shared.RandomStr(3) .. Core.Shared.RandomInt(1) .. Core.Shared.RandomStr(2) .. Core.Shared.RandomInt(3) .. Core.Shared.RandomStr(4))
                 info.quality = 100
             elseif itemData['name'] == 'harness' then
                 info.uses = 20
@@ -34,26 +34,26 @@ QBCore.Commands.Add('giveitem', 'Give An Item (Admin Only)', { { name = 'id', he
             end
 
             if AddItem(id, itemData['name'], amount, false, info, 'give item command') then
-                QBCore.Functions.Notify(source, Lang:t('notify.yhg') .. GetPlayerName(id) .. ' ' .. amount .. ' ' .. itemData['name'] .. '', 'success')
+                Core.Functions.Notify(source, Lang:t('notify.yhg') .. GetPlayerName(id) .. ' ' .. amount .. ' ' .. itemData['name'] .. '', 'success')
                 TriggerClientEvent('qb-inventory:client:ItemBox', id, itemData, 'add', amount)
                 if Player(id).state.inv_busy then TriggerClientEvent('qb-inventory:client:updateInventory', id) end
             else
-                QBCore.Functions.Notify(source, Lang:t('notify.cgitem'), 'error')
+                Core.Functions.Notify(source, Lang:t('notify.cgitem'), 'error')
             end
         else
-            QBCore.Functions.Notify(source, Lang:t('notify.idne'), 'error')
+            Core.Functions.Notify(source, Lang:t('notify.idne'), 'error')
         end
     else
-        QBCore.Functions.Notify(source, Lang:t('notify.pdne'), 'error')
+        Core.Functions.Notify(source, Lang:t('notify.pdne'), 'error')
     end
 end, 'admin')
 
-QBCore.Commands.Add('randomitems', 'Receive random items', {}, false, function(source)
-    local player = QBCore.Functions.GetPlayer(source)
+Core.Commands.Add('randomitems', 'Receive random items', {}, false, function(source)
+    local player = Core.Functions.GetPlayer(source)
     local playerInventory = player.PlayerData.items
     local filteredItems = {}
-    for k, v in pairs(QBCore.Shared.Items) do
-        if QBCore.Shared.Items[k]['type'] ~= 'weapon' then
+    for k, v in pairs(Core.Shared.Items) do
+        if Core.Shared.Items[k]['type'] ~= 'weapon' then
             filteredItems[#filteredItems + 1] = v
         end
     end
@@ -72,8 +72,8 @@ QBCore.Commands.Add('randomitems', 'Receive random items', {}, false, function(s
         end
         if emptySlot then
             if AddItem(source, randitem.name, amount, emptySlot, false, 'random items command') then
-                TriggerClientEvent('qb-inventory:client:ItemBox', source, QBCore.Shared.Items[randitem.name], 'add')
-                player = QBCore.Functions.GetPlayer(source)
+                TriggerClientEvent('qb-inventory:client:ItemBox', source, Core.Shared.Items[randitem.name], 'add')
+                player = Core.Functions.GetPlayer(source)
                 playerInventory = player.PlayerData.items
                 if Player(source).state.inv_busy then TriggerClientEvent('qb-inventory:client:updateInventory', source) end
             end
@@ -82,7 +82,7 @@ QBCore.Commands.Add('randomitems', 'Receive random items', {}, false, function(s
     end
 end, 'god')
 
-QBCore.Commands.Add('clearinv', 'Clear Inventory (Admin Only)', { { name = 'id', help = 'Player ID' } }, false, function(source, args)
+Core.Commands.Add('clearinv', 'Clear Inventory (Admin Only)', { { name = 'id', help = 'Player ID' } }, false, function(source, args)
     local id = tonumber(args[1])
     if not id then
         ClearInventory(source)
@@ -99,7 +99,7 @@ end, false)
 
 RegisterCommand('hotbar', function(source)
     if Player(source).state.inv_busy then return end
-    local QBPlayer = QBCore.Functions.GetPlayer(source)
+    local QBPlayer = Core.Functions.GetPlayer(source)
     if not QBPlayer then return end
     if not QBPlayer or QBPlayer.PlayerData.metadata['isdead'] or QBPlayer.PlayerData.metadata['inlaststand'] or QBPlayer.PlayerData.metadata['ishandcuffed'] then return end
     local hotbarItems = {
@@ -114,10 +114,10 @@ end, false)
 
 RegisterCommand('inventory', function(source)
     if Player(source).state.inv_busy then return end
-    local QBPlayer = QBCore.Functions.GetPlayer(source)
+    local QBPlayer = Core.Functions.GetPlayer(source)
     if not QBPlayer then return end
     if not QBPlayer or QBPlayer.PlayerData.metadata['isdead'] or QBPlayer.PlayerData.metadata['inlaststand'] or QBPlayer.PlayerData.metadata['ishandcuffed'] then return end
-    QBCore.Functions.TriggerClientCallback('qb-inventory:client:vehicleCheck', source, function(inventory, class)
+    Core.Functions.TriggerClientCallback('qb-inventory:client:vehicleCheck', source, function(inventory, class)
         if not inventory then return OpenInventory(source) end
         if inventory:find('trunk-') then
             OpenInventory(source, inventory, {
