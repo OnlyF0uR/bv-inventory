@@ -6,7 +6,7 @@ CurrentDrop = nil
 -- Functions
 
 function GetDrops()
-    Core.Functions.TriggerCallback('qb-inventory:server:GetCurrentDrops', function(drops)
+    Core.Functions.TriggerCallback('bv-inventory:server:GetCurrentDrops', function(drops)
         if not drops then return end
         for k, v in pairs(drops) do
             local bag = NetworkGetEntityFromNetworkId(v.entityId)
@@ -14,17 +14,14 @@ function GetDrops()
                 exports['bv-target']:AddTargetEntity({
                     name = 'drop-target',
                     netId = v.entityId,
-                    options = {{
+                    options = { {
                         icon = 'fas fa-backpack',
                         label = Lang:t('menu.o_bag'),
-                    }},
-                    onInteract = function(targetName, optionName, vars, entityHit)
-                        if optionName == Lang:t('menu.o_bag') then
-                            TriggerServerEvent('qb-inventory:server:openDrop', k)
+                        onInteract = function(_vars, _entityHit)
+                            TriggerServerEvent('bv-inventory:server:openDrop', k)
                             CurrentDrop = k
                         end
-                    end,
-                    interactDist = 2.5,
+                    } },
                 })
             end
         end
@@ -33,7 +30,7 @@ end
 
 -- Events
 
-RegisterNetEvent('qb-inventory:client:removeDropTarget', function(dropId)
+RegisterNetEvent('bv-inventory:client:removeDropTarget', function(dropId)
     while not NetworkDoesNetworkIdExist(dropId) do Wait(10) end
     local bag = NetworkGetEntityFromNetworkId(dropId)
     while not DoesEntityExist(bag) do Wait(10) end
@@ -41,7 +38,7 @@ RegisterNetEvent('qb-inventory:client:removeDropTarget', function(dropId)
     exports['bv-target']:RemoveTargetPoint('drop-target')
 end)
 
-RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
+RegisterNetEvent('bv-inventory:client:setupDropTarget', function(dropId)
     while not NetworkDoesNetworkIdExist(dropId) do Wait(10) end
     local bag = NetworkGetEntityFromNetworkId(dropId)
     while not DoesEntityExist(bag) do Wait(10) end
@@ -51,18 +48,19 @@ RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
         name = 'drop-target',
         -- netId = NetworkGetNetworkIdFromEntity(bag),
         netId = dropId,
-        options = {{
+        options = { {
+            name = newDropId .. '-open-bag',
             icon = 'fas fa-backpack',
             label = Lang:t('menu.o_bag'),
+            onInteract = function(_vars, _entityHit)
+                TriggerServerEvent('bv-inventory:server:openDrop', newDropId)
+                CurrentDrop = newDropId
+            end
         }, {
+            name = newDropId .. '-pick-up-bag',
             icon = 'fas fa-hand-pointer',
             label = 'Pick up bag',
-        }},
-        onInteract = function(targetName, optionName, vars, entityHit)
-            if optionName == Lang:t('menu.o_bag') then
-                TriggerServerEvent('qb-inventory:server:openDrop', newDropId)
-                CurrentDrop = newDropId
-            elseif optionName == 'Pick up bag' then
+            onInteract = function(_vars, _entityHit)
                 if IsPedArmed(PlayerPedId(), 4) then
                     return Core.Functions.Notify("You can not be holding a Gun and a Bag!", "error", 5500)
                 end
@@ -86,15 +84,14 @@ RegisterNetEvent('qb-inventory:client:setupDropTarget', function(dropId)
                 heldDrop = newDropId
                 exports['bv-core']:DrawText('Press [G] to drop the bag')
             end
-        end,
-        interactDist = 2.5,
+        } },
     })
 end)
 
 -- NUI Callbacks
 
 RegisterNUICallback('DropItem', function(item, cb)
-    Core.Functions.TriggerCallback('qb-inventory:server:createDrop', function(dropId)
+    Core.Functions.TriggerCallback('bv-inventory:server:createDrop', function(dropId)
         if dropId then
             while not NetworkDoesNetworkIdExist(dropId) do Wait(10) end
             local bag = NetworkGetEntityFromNetworkId(dropId)
@@ -122,7 +119,7 @@ CreateThread(function()
                 SetEntityCoords(bagObject, x, y, z - 0.9, false, false, false, false)
                 FreezeEntityPosition(bagObject, true)
                 exports['bv-core']:HideText()
-                TriggerServerEvent('qb-inventory:server:updateDrop', heldDrop, coords)
+                TriggerServerEvent('bv-inventory:server:updateDrop', heldDrop, coords)
                 HoldingDrop = false
                 bagObject = nil
                 heldDrop = nil

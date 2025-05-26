@@ -28,7 +28,7 @@ end
 
 -- Callbacks
 
-Core.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', function(cb)
+Core.Functions.CreateClientCallback('bv-inventory:client:vehicleCheck', function(cb)
     local ped = PlayerPedId()
 
     -- Glovebox
@@ -47,7 +47,10 @@ Core.Functions.CreateClientCallback('qb-inventory:client:vehicleCheck', function
         local pos = GetEntityCoords(ped)
         local dimensionMin, dimensionMax = GetModelDimensions(GetEntityModel(vehicle))
         local trunkpos = GetOffsetFromEntityInWorldCoords(vehicle, 0.0, (dimensionMin.y), 0.0)
-        if BackEngineVehicles[GetEntityModel(vehicle)] then trunkpos = GetOffsetFromEntityInWorldCoords(vehicle, 0.0, (dimensionMax.y), 0.0) end
+        if BackEngineVehicles[GetEntityModel(vehicle)] then
+            trunkpos = GetOffsetFromEntityInWorldCoords(vehicle, 0.0,
+                (dimensionMax.y), 0.0)
+        end
         if #(pos - trunkpos) < 1.5 then
             if GetVehicleDoorLockStatus(vehicle) < 2 then
                 OpenTrunk(vehicle)

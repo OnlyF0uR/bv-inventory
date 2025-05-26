@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
-author 'Kakarot (qb-inventory) & OnlyF0uR'
+author 'Kakarot (bv-inventory) & OnlyF0uR'
 description 'Player inventory system providing a variety of features for storing and managing items'
 version '2.0.0'
 

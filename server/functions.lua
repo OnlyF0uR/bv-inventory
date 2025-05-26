@@ -84,7 +84,8 @@ function LoadInventory(source, citizenid)
     end
 
     if #missingItems > 0 then
-        print(('The following items were removed for player %s as they no longer exist: %s'):format(source and GetPlayerName(source) or citizenid, table.concat(missingItems, ', ')))
+        print(('The following items were removed for player %s as they no longer exist: %s'):format(
+            source and GetPlayerName(source) or citizenid, table.concat(missingItems, ', ')))
     end
 
     return loadedInventory
@@ -117,7 +118,8 @@ function SaveInventory(source, offline)
                 }
             end
         end
-        MySQL.prepare('UPDATE players SET inventory = ? WHERE citizenid = ?', { json.encode(ItemsJson), PlayerData.citizenid })
+        MySQL.prepare('UPDATE players SET inventory = ? WHERE citizenid = ?',
+            { json.encode(ItemsJson), PlayerData.citizenid })
     else
         MySQL.prepare('UPDATE players SET inventory = ? WHERE citizenid = ?', { '[]', PlayerData.citizenid })
     end
@@ -142,8 +144,9 @@ function SetInventory(identifier, items, reason)
     if player then
         player.Functions.SetPlayerData('items', items)
         if not player.Offline then
-            local logMessage = string.format('**%s (citizenid: %s | id: %s)** items set: %s', GetPlayerName(identifier), player.PlayerData.citizenid, identifier, json.encode(items))
-            TriggerEvent('qb-log:server:CreateLog', 'playerinventory', 'SetInventory', 'blue', logMessage)
+            local logMessage = string.format('**%s (citizenid: %s | id: %s)** items set: %s', GetPlayerName(identifier),
+                player.PlayerData.citizenid, identifier, json.encode(items))
+            TriggerEvent('bv-log:server:CreateLog', 'playerinventory', 'SetInventory', 'blue', logMessage)
         end
     elseif Drops[identifier] then
         Drops[identifier].items = items
@@ -153,9 +156,9 @@ function SetInventory(identifier, items, reason)
 
     local invName = player and GetPlayerName(identifier) .. ' (' .. identifier .. ')' or identifier
     local setReason = reason or 'No reason specified'
-    local resourceName = GetInvokingResource() or 'qb-inventory'
+    local resourceName = GetInvokingResource() or 'bv-inventory'
     TriggerEvent(
-        'qb-log:server:CreateLog',
+        'bv-log:server:CreateLog',
         'playerinventory',
         'Inventory Set',
         'blue',
@@ -433,14 +436,15 @@ function ClearInventory(source, filterItems)
     end
     player.Functions.SetPlayerData('items', savedItemData)
     if not player.Offline then
-        local logMessage = string.format('**%s (citizenid: %s | id: %s)** inventory cleared', GetPlayerName(source), player.PlayerData.citizenid, source)
-        TriggerEvent('qb-log:server:CreateLog', 'playerinventory', 'ClearInventory', 'red', logMessage)
+        local logMessage = string.format('**%s (citizenid: %s | id: %s)** inventory cleared', GetPlayerName(source),
+            player.PlayerData.citizenid, source)
+        TriggerEvent('bv-log:server:CreateLog', 'playerinventory', 'ClearInventory', 'red', logMessage)
         local ped = GetPlayerPed(source)
         local weapon = GetSelectedPedWeapon(ped)
         if weapon ~= `WEAPON_UNARMED` then
             RemoveWeaponFromPed(ped, weapon)
         end
-        if Player(source).state.inv_busy then TriggerClientEvent('qb-inventory:client:updateInventory', source) end
+        if Player(source).state.inv_busy then TriggerClientEvent('bv-inventory:client:updateInventory', source) end
     end
 end
 
@@ -488,13 +492,13 @@ exports('HasItem', HasItem)
 -- CloseInventory function closes the inventory for a given source and identifier.
 -- It sets the isOpen flag of the inventory identified by the given identifier to false.
 -- It also sets the inv_busy flag of the player identified by the given source to false.
--- Finally, it triggers the 'qb-inventory:client:closeInv' event for the given source.
+-- Finally, it triggers the 'bv-inventory:client:closeInv' event for the given source.
 function CloseInventory(source, identifier)
     if identifier and Inventories[identifier] then
         Inventories[identifier].isOpen = false
     end
     Player(source).state.inv_busy = false
-    TriggerClientEvent('qb-inventory:client:closeInv', source)
+    TriggerClientEvent('bv-inventory:client:closeInv', source)
 end
 
 exports('CloseInventory', CloseInventory)
@@ -518,7 +522,7 @@ function OpenInventoryById(source, targetId)
     }
     Wait(1500)
     Player(targetId).state.inv_busy = true
-    TriggerClientEvent('qb-inventory:client:openInventory', source, playerItems, formattedInventory)
+    TriggerClientEvent('bv-inventory:client:openInventory', source, playerItems, formattedInventory)
 end
 
 exports('OpenInventoryById', OpenInventoryById)
@@ -577,7 +581,8 @@ function OpenShop(source, name)
     local playerPed = GetPlayerPed(source)
     local playerCoords = GetEntityCoords(playerPed)
     if RegisteredShops[name].coords then
-        local shopDistance = vector3(RegisteredShops[name].coords.x, RegisteredShops[name].coords.y, RegisteredShops[name].coords.z)
+        local shopDistance = vector3(RegisteredShops[name].coords.x, RegisteredShops[name].coords.y,
+            RegisteredShops[name].coords.z)
         if shopDistance then
             local distance = #(playerCoords - shopDistance)
             if distance > 5.0 then return end
@@ -590,7 +595,7 @@ function OpenShop(source, name)
         slots = #RegisteredShops[name].items,
         inventory = RegisteredShops[name].items
     }
-    TriggerClientEvent('qb-inventory:client:openInventory', source, Player.PlayerData.items, formattedInventory)
+    TriggerClientEvent('bv-inventory:client:openInventory', source, Player.PlayerData.items, formattedInventory)
 end
 
 exports('OpenShop', OpenShop)
@@ -605,7 +610,7 @@ function OpenInventory(source, identifier, data)
 
     if not identifier then
         Player(source).state.inv_busy = true
-        TriggerClientEvent('qb-inventory:client:openInventory', source, QBPlayer.PlayerData.items)
+        TriggerClientEvent('bv-inventory:client:openInventory', source, QBPlayer.PlayerData.items)
         return
     end
 
@@ -634,7 +639,7 @@ function OpenInventory(source, identifier, data)
         slots = inventory.slots,
         inventory = inventory.items
     }
-    TriggerClientEvent('qb-inventory:client:openInventory', source, QBPlayer.PlayerData.items, formattedInventory)
+    TriggerClientEvent('bv-inventory:client:openInventory', source, QBPlayer.PlayerData.items, formattedInventory)
 end
 
 exports('OpenInventory', OpenInventory)
@@ -752,7 +757,10 @@ function AddItem(identifier, item, amount, slot, info, reason)
 
         if itemInfo.type == 'weapon' then
             if not inventory[slot].info.serie then
-                inventory[slot].info.serie = tostring(Core.Shared.RandomInt(2) .. Core.Shared.RandomStr(3) .. Core.Shared.RandomInt(1) .. Core.Shared.RandomStr(2) .. Core.Shared.RandomInt(3) .. Core.Shared.RandomStr(4))
+                inventory[slot].info.serie = tostring(Core.Shared.RandomInt(2) ..
+                    Core.Shared.RandomStr(3) ..
+                    Core.Shared.RandomInt(1) ..
+                    Core.Shared.RandomStr(2) .. Core.Shared.RandomInt(3) .. Core.Shared.RandomStr(4))
             end
             if not inventory[slot].info.quality then
                 inventory[slot].info.quality = 100
@@ -763,9 +771,9 @@ function AddItem(identifier, item, amount, slot, info, reason)
     if player then player.Functions.SetPlayerData('items', inventory) end
     local invName = player and GetPlayerName(identifier) .. ' (' .. identifier .. ')' or identifier
     local addReason = reason or 'No reason specified'
-    local resourceName = GetInvokingResource() or 'qb-inventory'
+    local resourceName = GetInvokingResource() or 'bv-inventory'
     TriggerEvent(
-        'qb-log:server:CreateLog',
+        'bv-log:server:CreateLog',
         'playerinventory',
         'Item Added',
         'green',
@@ -849,10 +857,10 @@ function RemoveItem(identifier, item, amount, slot, reason)
 
     local invName = player and GetPlayerName(identifier) .. ' (' .. identifier .. ')' or identifier
     local removeReason = reason or 'No reason specified'
-    local resourceName = GetInvokingResource() or 'qb-inventory'
+    local resourceName = GetInvokingResource() or 'bv-inventory'
 
     TriggerEvent(
-        'qb-log:server:CreateLog',
+        'bv-log:server:CreateLog',
         'playerinventory',
         'Item Removed',
         'red',
