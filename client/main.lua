@@ -282,18 +282,16 @@ end)
 -- Vending
 
 CreateThread(function()
-    exports['bv-target']:AddTargetModels({
-        name = "open-vending",
-        label = Lang:t('menu.vending'),
-        models = Config.VendingObjects,
-        options = { {
-            icon = 'fa-solid fa-cash-register',
-            label = Lang:t('menu.vending'),
-            onInteract = function(_vars, entity)
-                local netId = NetworkGetNetworkIdFromEntity(entity)
-                TriggerServerEvent('bv-inventory:server:openVending', netId)
-            end,
-        } },
+    exports['bv-target']:AddTargetModel(Config.VendingObjects, {
+        options = {
+            {
+                type = 'server',
+                event = 'bv-inventory:server:openVending',
+                icon = 'fa-solid fa-cash-register',
+                label = Lang:t('menu.vending'),
+            },
+        },
+        distance = 2.5
     })
 end)
 

@@ -30,8 +30,8 @@ Core.Commands.Add('giveitem', 'Give An Item (Admin Only)',
                         Core.Shared.RandomInt(1) ..
                         Core.Shared.RandomStr(2) .. Core.Shared.RandomInt(3) .. Core.Shared.RandomStr(4))
                     info.quality = 100
-                elseif itemData['name'] == 'harness' then
-                    info.uses = 20
+                    -- elseif itemData['name'] == 'harness' then
+                    --     info.uses = 20
                 elseif itemData['name'] == 'markedbills' then
                     info.worth = math.random(5000, 10000)
                 elseif itemData['name'] == 'printerdocument' then
@@ -108,30 +108,25 @@ end, false)
 
 RegisterCommand('hotbar', function(source)
     if Player(source).state.inv_busy then return end
-    local QBPlayer = Core.Functions.GetPlayer(source)
-    if not QBPlayer then return end
-    if not QBPlayer or QBPlayer.PlayerData.metadata['isdead'] or QBPlayer.PlayerData.metadata['inlaststand'] or QBPlayer.PlayerData.metadata['ishandcuffed'] then return end
+    local BVPlayer = Core.Functions.GetPlayer(source)
+    if not BVPlayer then return end
+    if not BVPlayer or BVPlayer.PlayerData.metadata['isdead'] or BVPlayer.PlayerData.metadata['inlaststand'] or BVPlayer.PlayerData.metadata['ishandcuffed'] then return end
     local hotbarItems = {
-        QBPlayer.PlayerData.items[1],
-        QBPlayer.PlayerData.items[2],
-        QBPlayer.PlayerData.items[3],
-        QBPlayer.PlayerData.items[4],
-        QBPlayer.PlayerData.items[5],
+        BVPlayer.PlayerData.items[1],
+        BVPlayer.PlayerData.items[2],
+        BVPlayer.PlayerData.items[3],
+        BVPlayer.PlayerData.items[4],
+        BVPlayer.PlayerData.items[5],
     }
     TriggerClientEvent('bv-inventory:client:hotbar', source, hotbarItems)
 end, false)
 
 RegisterCommand('inventory', function(source)
     local src = source
-    -- print src
-    print(src)
     if Player(src).state.inv_busy then return end
-    local QBPlayer = Core.Functions.GetPlayer(src)
-    print(QBPlayer == nil)
-    if not QBPlayer then return end
-    print('inventory command 3')
-    if not QBPlayer or QBPlayer.PlayerData.metadata['isdead'] or QBPlayer.PlayerData.metadata['inlaststand'] or QBPlayer.PlayerData.metadata['ishandcuffed'] then return end
-    print('inventory command 4')
+    local BVPlayer = Core.Functions.GetPlayer(src)
+    if not BVPlayer then return end
+    if not BVPlayer or BVPlayer.PlayerData.metadata['isdead'] or BVPlayer.PlayerData.metadata['inlaststand'] or BVPlayer.PlayerData.metadata['ishandcuffed'] then return end
     Core.Functions.TriggerClientCallback('bv-inventory:client:vehicleCheck', src, function(inventory, class)
         if not inventory then return OpenInventory(src) end
         if inventory:find('trunk-') then

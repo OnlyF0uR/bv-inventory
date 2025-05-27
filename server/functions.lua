@@ -134,8 +134,6 @@ exports('SaveInventory', SaveInventory)
 function SetInventory(identifier, items, reason)
     local player = Core.Functions.GetPlayer(identifier)
 
-    print('Setting inventory for ' .. identifier)
-
     if not player and not Inventories[identifier] and not Drops[identifier] then
         print('SetInventory: Inventory not found')
         return
@@ -507,11 +505,11 @@ exports('CloseInventory', CloseInventory)
 --- @param source number - The player's server ID.
 --- @param targetId number - The ID of the player whose inventory will be opened.
 function OpenInventoryById(source, targetId)
-    local QBPlayer = Core.Functions.GetPlayer(source)
+    local BVPlayer = Core.Functions.GetPlayer(source)
     local TargetPlayer = Core.Functions.GetPlayer(tonumber(targetId))
-    if not QBPlayer or not TargetPlayer then return end
+    if not BVPlayer or not TargetPlayer then return end
     if Player(targetId).state.inv_busy then CloseInventory(targetId) end
-    local playerItems = QBPlayer.PlayerData.items
+    local playerItems = BVPlayer.PlayerData.items
     local targetItems = TargetPlayer.PlayerData.items
     local formattedInventory = {
         name = 'otherplayer-' .. targetId,
@@ -605,12 +603,12 @@ exports('OpenShop', OpenShop)
 --- @param data table|nil Additional data for initializing the inventory.
 function OpenInventory(source, identifier, data)
     if Player(source).state.inv_busy then return end
-    local QBPlayer = Core.Functions.GetPlayer(source)
-    if not QBPlayer then return end
+    local BVPlayer = Core.Functions.GetPlayer(source)
+    if not BVPlayer then return end
 
     if not identifier then
         Player(source).state.inv_busy = true
-        TriggerClientEvent('bv-inventory:client:openInventory', source, QBPlayer.PlayerData.items)
+        TriggerClientEvent('bv-inventory:client:openInventory', source, BVPlayer.PlayerData.items)
         return
     end
 
@@ -639,7 +637,7 @@ function OpenInventory(source, identifier, data)
         slots = inventory.slots,
         inventory = inventory.items
     }
-    TriggerClientEvent('bv-inventory:client:openInventory', source, QBPlayer.PlayerData.items, formattedInventory)
+    TriggerClientEvent('bv-inventory:client:openInventory', source, BVPlayer.PlayerData.items, formattedInventory)
 end
 
 exports('OpenInventory', OpenInventory)

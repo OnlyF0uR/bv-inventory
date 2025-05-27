@@ -88,7 +88,7 @@ end)
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
-    local Players = Core.Functions.GetQBPlayers()
+    local Players = Core.Functions.GetBVPlayers()
     for k in pairs(Players) do
         Core.Functions.AddPlayerMethod(k, 'AddItem', function(item, amount, slot, info)
             return AddItem(k, item, amount, slot, info)
@@ -153,8 +153,8 @@ end)
 
 RegisterNetEvent('bv-inventory:server:closeInventory', function(inventory)
     local src = source
-    local QBPlayer = Core.Functions.GetPlayer(src)
-    if not QBPlayer then return end
+    local BVPlayer = Core.Functions.GetPlayer(src)
+    if not BVPlayer then return end
     Player(source).state.inv_busy = false
     if inventory:find('shop%-') then return end
     if inventory:find('otherplayer%-') then
@@ -182,15 +182,23 @@ end)
 RegisterNetEvent('bv-inventory:server:useItem', function(item)
     local src = source
     local itemData = GetItemBySlot(src, item.slot)
-    if not itemData then return end
+    if not itemData then
+        print(('Item not found for slot %s'):format(item.slot))
+        return
+    end
     local itemInfo = Core.Shared.Items[itemData.name]
+    if not itemInfo then
+        print(('Item info not found for item %s'):format(itemData.name))
+        return
+    end
+
     if itemData.type == 'weapon' then
         TriggerClientEvent('core-weapons:client:UseWeapon', src, itemData,
             itemData.info.quality and itemData.info.quality > 0)
         TriggerClientEvent('bv-inventory:client:ItemBox', src, itemInfo, 'use')
     elseif itemData.name == 'id_card' then
         UseItem(itemData.name, src, itemData)
-        TriggerClientEvent('bv-inventory:client:ItemBox', source, itemInfo, 'use')
+        TriggerClientEvent('bv-inventory:client:ItemBox', src, itemInfo, 'use')
         local playerPed = GetPlayerPed(src)
         local playerCoords = GetEntityCoords(playerPed)
         local players = Core.Functions.GetPlayers()
