@@ -128,7 +128,7 @@ local function checkWeapon(source, item)
     local currentWeapon = type(item) == 'table' and item.name or item
     local ped = GetPlayerPed(source)
     local weapon = GetSelectedPedWeapon(ped)
-    local weaponInfo = Core.Shared.Weapons[weapon]
+    local weaponInfo = Core.Shared.Weapons.List[weapon]
     if weaponInfo and weaponInfo.name == currentWeapon then
         RemoveWeaponFromPed(ped, weapon)
         TriggerClientEvent('core-weapons:client:UseWeapon', source, { name = currentWeapon }, false)
