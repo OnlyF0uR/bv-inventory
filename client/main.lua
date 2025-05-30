@@ -104,6 +104,19 @@ end
 
 exports('HasItem', HasItem)
 
+function GetQuantity(itemName)
+    if PlayerData and type(PlayerData.items) == "table" then
+        for _, itemData in pairs(PlayerData.items) do
+            if itemData.name == itemName then
+                return itemData.amount or 0
+            end
+        end
+    end
+    return 0
+end
+
+exports('GetQuantity', GetQuantity)
+
 -- Events
 
 RegisterNetEvent('bv-inventory:client:requiredItems', function(items, bool)

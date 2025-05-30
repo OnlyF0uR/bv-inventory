@@ -1,8 +1,7 @@
 const InventoryContainer = Vue.createApp({
     data() {
         return this.getInitialState();
-    },
-    computed: {
+    },    computed: {
         playerWeight() {
             const weight = Object.values(this.playerInventory).reduce((total, item) => {
                 if (item && item.weight !== undefined && item.amount !== undefined) {
@@ -43,6 +42,15 @@ const InventoryContainer = Vue.createApp({
         },
         shouldCenterInventory() {
             return this.isOtherInventoryEmpty;
+        },
+        dragX() {
+            return this.currentlyDraggingItem ? this.clientX - 25 : 0;
+        },
+        dragY() {
+            return this.currentlyDraggingItem ? this.clientY - 25 : 0;
+        },
+        draggedItem() {
+            return this.currentlyDraggingItem;
         },
     },
     watch: {
@@ -335,13 +343,18 @@ const InventoryContainer = Vue.createApp({
             ghostElement.style.height = getComputedStyle(slotElement).height;
             ghostElement.style.boxSizing = "border-box";
             return ghostElement;
-        },
-        drag(event) {
+        },        drag(event) {
             if (!this.currentlyDraggingItem) return;
+            if (!this.ghostElement) return;
+            
             const centeredX = event.clientX - this.ghostElement.offsetWidth / 2;
             const centeredY = event.clientY - this.ghostElement.offsetHeight / 2;
             this.ghostElement.style.left = `${centeredX}px`;
             this.ghostElement.style.top = `${centeredY}px`;
+            
+            // Update client position for dragged item component
+            this.clientX = event.clientX;
+            this.clientY = event.clientY;
         },
         endDrag(event) {
             if (!this.currentlyDraggingItem) {
@@ -422,14 +435,15 @@ const InventoryContainer = Vue.createApp({
                 }
             }
             this.clearDragData();
-        },
-        clearDragData() {
+        },        clearDragData() {
             if (this.ghostElement) {
                 document.body.removeChild(this.ghostElement);
                 this.ghostElement = null;
             }
             this.currentlyDraggingItem = null;
             this.currentlyDraggingSlot = null;
+            this.clientX = 0;
+            this.clientY = 0;
         },
         getInventoryByType(inventoryType) {
             return inventoryType === "player" ? this.playerInventory : this.otherInventory;
@@ -863,8 +877,7 @@ const InventoryContainer = Vue.createApp({
                     console.error(error);
                     this.selectedWeaponAttachments.splice(index, 0, attachment);
                 });
-        },
-        generateTooltipContent(item) {
+        },        generateTooltipContent(item) {
             if (!item) {
                 return "";
             }
